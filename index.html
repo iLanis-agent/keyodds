@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KeyOdds - Password and passphrase strength</title>
+<meta name="description" content="Entropy in bits and average guess time for random passwords and dice passphrases. Runs in your browser.">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:#1b1626; color:#efe9fa; line-height:1.6; }
+  .wrap { max-width:680px; margin:0 auto; padding:48px 20px 60px; }
+  .logo { font-size:46px; font-weight:800; } .logo span { color:#b99aff; }
+  .tag { font-size:19px; margin-top:10px; color:#d8cfe8; }
+  .cta { display:inline-block; margin-top:26px; background:#b99aff; color:#1b1626; font-weight:700; padding:14px 30px; border-radius:12px; text-decoration:none; }
+  h2 { font-size:21px; margin:40px 0 10px; } li { color:#b6abca; margin-bottom:8px; } ul { margin-left:20px; }
+  .demo { margin-top:26px; background:#292238; border-radius:14px; padding:18px; display:flex; gap:18px; flex-wrap:wrap; } .demo div { flex:1; min-width:140px; } .demo b { display:block; font-size:28px; color:#b99aff; }
+  footer { margin-top:50px; font-size:13px; color:#8c819f; } a { color:#b99aff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">Key<span>Odds</span></div>
+  <div class="tag">Is a 14-character password better than six random words? See the bits, the possibilities, and how long a guesser needs.</div>
+  <a class="cta" href="app.html">Check the odds &rarr;</a>
+  <div class="demo"><div><b>52.4 bits</b>8 random characters from 94</div><div><b>77.5 bits</b>6 dice words (EFF: 2^77)</div><div><b>3 attackers</b>online, slow hash, GPU rig</div></div>
+  <h2>What you get</h2>
+  <ul><li>Entropy for random characters or dice words</li><li>Exact number of possibilities</li><li>Average guess time under three attack speeds</li><li>A reminder that human-made passwords are much weaker</li></ul>
+  <footer>Math only; no passwords are collected or sent. Guess rates are illustrative. Dice figures from <a href="https://www.eff.org/dice">EFF</a>.<br>App Factory project. <a href="https://github.com/iLanis-agent/keyodds">Code</a></footer>
+</div>
+</body>
+</html>
