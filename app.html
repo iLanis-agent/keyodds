@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KeyOdds - Password and passphrase strength</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:#1b1626; color:#efe9fa; line-height:1.5; }
+  .wrap { max-width:640px; margin:0 auto; padding:26px 18px 60px; }
+  a { color:#b99aff; } h1 { font-size:28px; } h1 span { color:#b99aff; } .sub { color:#aa9fc0; margin:4px 0 18px; }
+  .card { background:#292238; border-radius:14px; padding:16px; margin-bottom:14px; }
+  label { display:block; font-size:13px; color:#aa9fc0; margin:10px 0 4px; }
+  input[type=number] { width:100%; padding:11px; border-radius:9px; border:1px solid #473c5e; background:#1b1626; color:#efe9fa; font-size:16px; }
+  .seg { display:flex; gap:8px; } .seg button { flex:1; padding:10px; border-radius:9px; border:1px solid #473c5e; background:#1b1626; color:#aa9fc0; font-size:14px; cursor:pointer; } .seg button.on { background:#b99aff; color:#1b1626; font-weight:700; border-color:#b99aff; }
+  .chk { display:flex; flex-wrap:wrap; gap:14px; margin-top:6px; } .chk label { display:flex; align-items:center; gap:6px; margin:0; color:#efe9fa; font-size:14px; } .chk input { width:auto; }
+  .big { font-size:40px; font-weight:800; color:#b99aff; } .lbl { font-size:13px; color:#aa9fc0; }
+  .meter { height:12px; border-radius:6px; background:#1b1626; overflow:hidden; margin-top:10px; } .meter div { height:100%; background:#b99aff; }
+  table { width:100%; border-collapse:collapse; font-size:14px; margin-top:12px; } td { padding:8px 4px; border-bottom:1px solid #3a3050; } td.t { text-align:right; font-weight:700; color:#b99aff; }
+  h2 { font-size:17px; margin-bottom:8px; } .small { font-size:13px; color:#aa9fc0; }
+  .warn { background:#3d2a20; border:1px solid #b9703f; color:#ffddc4; padding:12px; border-radius:10px; margin-top:12px; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Key<span>Odds</span></h1>
+  <div class="sub">How hard is a randomly generated password or passphrase to guess? Nothing you enter leaves this page, and you do not type a real password here.</div>
+  <div class="card">
+    <div class="seg" id="mode"><button data-v="chars" class="on">Random characters</button><button data-v="words">Random words (dice)</button></div>
+    <div id="charsui"><label for="len">Length</label><input id="len" type="number" min="1" max="200" value="8"><div class="chk"><label><input type="checkbox" id="lower" checked> a-z</label><label><input type="checkbox" id="upper" checked> A-Z</label><label><input type="checkbox" id="digits" checked> 0-9</label><label><input type="checkbox" id="symbols" checked> symbols</label></div></div>
+    <div id="wordsui" style="display:none"><label for="wc">Words from a 7,776-word dice list</label><input id="wc" type="number" min="1" max="30" value="6"></div>
+  </div>
+  <div class="card" id="out"></div>
+  <div class="card"><h2>About this</h2><div class="small">Entropy is length &times; log<sub>2</sub>(pool size), and each extra bit doubles the guesses. It is only valid when the password is picked at random by a generator. A password a person made up, like a pet name with a 1 on the end, is far weaker than its length suggests. Six words from the EFF dice list are 7,776<sup>6</sup> = 221,073,919,720,733,357,899,776 possibilities, about 2<sup>77</sup>, per <a href="https://www.eff.org/dice">EFF</a>. Guess rates are illustrative assumptions, not measurements, and the time shown is the average, half the keyspace. Use a password manager, and turn on two-factor sign-in. <a href="index.html">About</a></div></div>
+</div>
+<script src="engine.js"></script>
+<script>
+var $ = function (i) { return document.getElementById(i); }, mode = 'chars';
+Array.prototype.forEach.call($('mode').querySelectorAll('button'), function (b) { b.onclick = function () { Array.prototype.forEach.call($('mode').querySelectorAll('button'), function (x) { x.className = ''; }); b.className = 'on'; mode = b.getAttribute('data-v'); $('charsui').style.display = mode === 'chars' ? '' : 'none'; $('wordsui').style.display = mode === 'words' ? '' : 'none'; render(); }; });
+function render() {
+  var bits, combos, desc;
+  if (mode === 'chars') {
+    var sel = { lower: $('lower').checked, upper: $('upper').checked, digits: $('digits').checked, symbols: $('symbols').checked }, L = parseInt($('len').value, 10), P = Odds.pool(sel);
+    if (!(L >= 1) || P < 2) { $('out').innerHTML = '<div class="warn">Pick at least one character type and a length of 1 or more.</div>'; return; }
+    bits = Odds.bitsChars(L, P); combos = Odds.combos(L, P); desc = L + ' random characters from a pool of ' + P;
+  } else {
+    var W = parseInt($('wc').value, 10); if (!(W >= 1)) { $('out').innerHTML = '<div class="warn">Enter 1 or more words.</div>'; return; }
+    bits = Odds.bitsWords(W); combos = Odds.combos(W, Odds.DICE_WORDS); desc = W + ' random words from a 7,776-word list';
+  }
+  var cs = combos.toString(), shown = cs.length > 24 ? cs[0] + '.' + cs.slice(1, 4) + ' x 10^' + (cs.length - 1) : combos.toLocaleString('en-US');
+  var h = '<div class="lbl">' + desc + '</div><div class="big" id="bits">' + bits.toFixed(1) + ' bits</div><div class="lbl" id="verdict">Rated ' + Odds.verdict(bits) + ' (if truly random)</div><div class="meter"><div style="width:' + Math.min(100, bits / 128 * 100).toFixed(1) + '%"></div></div><div class="lbl" style="margin-top:8px">' + shown + ' possibilities</div><table>';
+  Object.keys(Odds.RATES).forEach(function (k) { var r = Odds.RATES[k]; h += '<tr><td>' + r.name + '</td><td class="t" id="t-' + k + '">' + Odds.human(Odds.avgSeconds(bits, r.gps)) + '</td></tr>'; });
+  $('out').innerHTML = h + '</table><div class="small" style="margin-top:8px">Average time to guess.</div>';
+}
+['len', 'wc', 'lower', 'upper', 'digits', 'symbols'].forEach(function (i) { $(i).oninput = render; $(i).onchange = render; });
+render();
+</script>
+</body>
+</html>
